@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
@@ -421,6 +422,13 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
   }
 
   public static final class Builder {
+    public static interface GlobalHandler {
+      Builder handle(Builder builder);
+    }
+
+    public static CopyOnWriteArrayList<GlobalHandler> preBuildGlobalHandlers
+            = new CopyOnWriteArrayList<>();
+
     Dispatcher dispatcher;
     Proxy proxy;
     List<Protocol> protocols;
@@ -875,7 +883,13 @@ public class OkHttpClient implements Cloneable, Call.Factory, WebSocket.Factory 
     }
 
     public OkHttpClient build() {
-      return new OkHttpClient(this);
+      Builder instance = this;
+
+      for (GlobalHandler handler : preBuildGlobalHandlers) {
+        instance = handler.handle(instance);
+      }
+
+      return new OkHttpClient(instance);
     }
   }
 }
