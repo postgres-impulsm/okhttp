@@ -10,6 +10,7 @@
   </parent>
 
   <artifactId>okhttp</artifactId>
+  <version>20170227-IMPULSM-SNAPSHOT</version>
   <name>OkHttp</name>
 
   <dependencies>
